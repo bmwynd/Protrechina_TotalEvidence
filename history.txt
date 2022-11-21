@@ -1,0 +1,15 @@
+q()
+data[i
+]
+data[1]
+data[1][1]
+q()
+data[i]
+data
+q()
+data[i]
+data[1]
+data[2]
+q()
+data[2]
+q()
