@@ -1,0 +1,21 @@
+setwd("/home/orlando/Protrechina/Protrechina_TotalEvidence/")
+
+trace1_1 = readTreeTrace("Output/Protrechina_group1_run_1.trees")
+mccTree(trace1_1, file="Output/Protrechina_mcc1_1.tre")
+
+trace1_2 = readTreeTrace("Output/Protrechina_group1_run_2.trees")
+mccTree(trace1_2, file="Output/Protrechina_mcc1_2.tre")
+
+trace2_1 = readTreeTrace("Output/Protrechina_group2_run_1.trees")
+mccTree(trace2_1, file="Output/Protrechina_mcc2_1.tre")
+
+trace2_2 = readTreeTrace("Output/Protrechina_group2_run_2.trees")
+mccTree(trace2_2, file="Output/Protrechina_mcc2_2.tre")
+
+#trace3 = readTreeTrace("Output/Protrechina_group3.trees")
+#mccTree(trace3, file="Output/Protrechina_mcc3.tre")
+
+#trace4 = readTreeTrace("Output/Protrechina_group4.trees")
+#mccTree(trace4, file="Output/Protrechina_mcc4.tre")
+
+q()

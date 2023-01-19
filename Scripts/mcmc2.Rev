@@ -1,0 +1,109 @@
+#set to the home directory
+setwd("/home/orlando/Protrechina/Protrechina_TotalEvidence/")
+
+#load in the entire folder of files to be analyzed
+filenames <- v("Data/Genes/Argk.aln.nex", "Data/Genes/CAD.aln.nex", "Data/Genes/Eno.aln.nex", "Data/Genes/LW-Rh.aln.nex")
+taxa <- readTaxonData("Data/Taxa.tsv")
+
+#establish the number of unique datasets
+n_data_subsets <- filenames.size()
+
+#create a data matrix that includes all of the gene matrices
+for (i in 1:n_data_subsets){
+    data[i] = readDiscreteCharacterData(filenames[i])
+  }
+
+#add missing taxa to each column in the data matrix to ensure one taxon block can be used for each gene matrix
+for (i in 1:n_data_subsets){
+    data[i].addMissingTaxa( taxa )
+}
+
+#specify the number of taxa and branches
+n_taxa <- taxa.size()
+num_branches <- 2 * n_taxa - 3
+
+#establish the mcmc vector parameters
+moves = VectorMoves()
+monitors = VectorMonitors()
+
+#establish the GTR priors
+for (i in 1:n_data_subsets) {
+    er_prior[i] <- v(1,1,1,1,1,1)
+    er[i] ~ dnDirichlet(er_prior[i])
+    moves.append( mvBetaSimplex(er[i], alpha=10, tune=true, weight=3) )
+}
+
+#establish stationary frequencies
+for (i in 1:n_data_subsets) {
+    pi_prior[i] <- v(1,1,1,1)
+    pi[i] ~ dnDirichlet(pi_prior[i])
+    moves.append( mvBetaSimplex(pi[i], alpha=10, tune=true, weight=2) )
+}
+
+#Pass parameters into a rate matrix function
+for (i in 1:n_data_subsets) {
+    Q[i] := fnGTR(er[i],pi[i]) 
+}
+
+
+#Construct remaining partition parameters
+for (i in 1:n_data_subsets) {
+    alpha[i] ~ dnUniform( 0.0, 1E8 )
+    gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
+
+    moves.append( mvScale(alpha[i],weight=2) )
+}
+
+#Invariant sites model
+for (i in 1:n_data_subsets) {
+    pinvar[i] ~ dnBeta(1,1)
+    moves.append( mvBetaProbability(pinvar[i], delta=10.0, tune=true, weight=2.0) )
+}
+
+#Per-partition substitution rate multipliers
+part_rate_mult ~ dnDirichlet( rep(1.0, n_data_subsets) )
+moves.append( mvBetaSimplex(part_rate_mult, alpha=1.0, tune=true, weight=n_data_subsets) )
+moves.append( mvDirichletSimplex(part_rate_mult, alpha=1.0, tune=true, weight=2.0) )
+
+part_rate := part_rate_mult * n_data_subsets
+
+#Tree priors
+topology ~ dnUniformTopology(taxa)
+moves.append( mvNNI(topology, weight=n_taxa/2.0) )
+moves.append( mvSPR(topology, weight=n_taxa/10.0) )
+
+#Branch length prior
+for (i in 1:num_branches) {
+    bl[i] ~ dnExponential(10.0)
+        moves.append( mvScale(bl[i]) )
+}
+
+TL := sum(bl)
+
+psi := treeAssembly(topology, bl)
+
+#Create phylogenetic CTMC for each gene
+for (i in 1:n_data_subsets) {
+    seq[i] ~ dnPhyloCTMC(tree=psi, Q=Q[i], branchRates=part_rate_mult[i], siteRates=gamma_rates[i], pInv=pinvar[i], type="DNA")
+    seq[i].clamp(data[i])
+}
+
+#wrap the components in a model object
+
+my_model = model(psi)
+
+#Create the monitors
+monitors.append( mnModel(filename="Output/Protrechina_group2.log",printgen=10) )
+monitors.append( mnFile(psi, filename="Output/Protrechina_group2.trees", printgen=100) )
+monitors.append( mnScreen(TL, printgen=1000) )
+
+#configure and run the MCMC
+mymcmc = mcmc(my_model, moves, monitors, nruns=2, combine="mixed")
+mymcmc.run(30000, tuningInterval=200)
+
+#summarize posterior density of trees
+treetrace = readTreeTrace("Output/Protrechina_group2.trees", treetype="non-clock")
+treetrace.summarize()
+mapTree(treetrace, "Output/Protrechina_group2_MAP.tre")
+
+q()

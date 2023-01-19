@@ -1,8 +1,8 @@
 #set to the home directory
-setwd("/home/brenen/bmwynd/WrightLab/Protrechina_molecular_data/Protrechina_tree_estimation")
+setwd("/home/orlando/Protrechina/Protrechina_TotalEvidence/")
 
 #load in the entire folder of files to be analyzed
-filenames <- v("/Data/Genes/")
+filenames <- v("Data/Genes/18S.aln.nex", "Data/Genes/28S.aln.nex", "Data/Genes/Abd-A.aln.nex", "Data/Genes/Antp.aln.nex", "Data/Genes/Argk.aln.nex", "Data/Genes/CAD.aln.nex", "Data/Genes/EF-1a-F1.aln.nex", "Data/Genes/EF-1a-F2.aln.nex", "Data/Genes/Eno.aln.nex", "Data/Genes/LW-Rh.aln.nex", "Data/Genes/Nak.aln.nex", "Data/Genes/POLD1.aln.nex", "Data/Genes/TOP1.aln.nex", "Data/Genes/Ubx.aln.nex", "Data/Genes/Wg.aln.nex", "Data/Genes/Wnt-1.aln.nex")
 taxa <- readTaxonData("Data/Taxa.tsv")
 
 #establish the number of unique datasets
@@ -10,18 +10,16 @@ n_data_subsets <- filenames.size()
 
 #create a data matrix that includes all of the gene matrices
 for (i in 1:n_data_subsets){
-    data = readDiscreteCharacterData(filenames[i])
-   data[i]
+    data[i] = readDiscreteCharacterData(filenames[i])
   }
 
 #add missing taxa to each column in the data matrix to ensure one taxon block can be used for each gene matrix
-for (i in 1:data.size()){
+for (i in 1:n_data_subsets){
     data[i].addMissingTaxa( taxa )
 }
 
 #specify the number of taxa and branches
-taxa <- data[1].taxa()
-n_taxa <- data[1].ntaxa()
+n_taxa <- taxa.size()
 num_branches <- 2 * n_taxa - 3
 
 #establish the mcmc vector parameters

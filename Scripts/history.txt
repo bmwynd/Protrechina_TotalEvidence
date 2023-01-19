@@ -1,0 +1,13 @@
+getwd()
+setwd("/home/orlando/Protrechina/Protrechina_TotalEvidence")
+filenames <- v("Data/Genes/")
+taxa <- ("Data/Taxa.tsv")
+n_data_subsets <- filenames.size()
+for (i in 1:n_data_subsets){
+data = readDiscreteCharacterData(filenames[i])
+}
+for (i in 1:n_data_subsets){
+data = readDiscreteCharacterData(filenames[i])
+}
+setwd("/home/orlando/Protrechina/Protrechina_TotalEvidence")
+setwd("/home/orlando/Protrechina/Protrechina_TotalEvidence/")

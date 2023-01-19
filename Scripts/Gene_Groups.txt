@@ -1,0 +1,23 @@
+Group 1
+18S
+28S
+EF-1a-F1
+EF-1a-F2
+
+Group 2
+ArgK
+CAD
+Eno
+LW-Rh
+
+Group 3
+abd-A
+antP
+Ubx
+Wg
+
+Group 4
+POLD1
+wnt-1
+TOP1
+NaK
